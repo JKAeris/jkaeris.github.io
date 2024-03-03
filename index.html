@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            justify-content: center;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            font-size: 36px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell.red {
+            background-color: red;
+        }
+
+        .cell.blue {
+            background-color: blue;
+        }
+
+        #resetBtn {
+            margin-top: 20px;
+            font-size: 16px;
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #winMessage {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .red-win {
+            color: red;
+        }
+
+        .blue-win {
+            color: blue;
+        }
+    </style>
+    <title>Applauding Tic Tac Toe</title>
+</head>
+<body>
+    <h1>Applauding Tic Tac Toe</h1>
+    <div id="board"></div>
+    <div id="winMessage"></div>
+    <button id="resetBtn" onclick="resetGame()">RESET</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const board = document.getElementById('board');
+            const cells = [];
+            const winMessage = document.getElementById('winMessage');
+            const applauseSound = new Audio('applause.mp3');  // 換成你的音效文件
+
+            let isRedTurn = true;
+
+            // 初始化棋盤
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener('click', handleClick);
+                    board.appendChild(cell);
+                    cells.push(cell);
+                }
+            }
+
+            function handleClick() {
+                const row = this.dataset.row;
+                const col = this.dataset.col;
+
+                if (!this.classList.contains('red') && !this.classList.contains('blue')) {
+                    // 如果方塊還沒被點擊過
+                    if (isRedTurn) {
+                        // 如果是紅色的回合，變成紅色
+                        this.classList.add('red');
+                    } else {
+                        // 如果是藍色的回合，變成藍色
+                        this.classList.add('blue');
+                    }
+
+                    // 判定獲勝
+                    if (checkWinner()) {
+                        displayWinner(isRedTurn ? 'Red' : 'Blue');
+                    }
+
+                    // 切換回合
+                    isRedTurn = !isRedTurn;
+
+                    // 移除點擊事件
+                    this.removeEventListener('click', handleClick);
+                }
+            }
+
+            function checkWinner() {
+                const lines = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // 水平
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // 垂直
+                    [0, 4, 8], [2, 4, 6]             // 對角線
+                ];
+
+                for (const line of lines) {
+                    const [a, b, c] = line;
+
+                    if (
+                        cells[a].classList.contains('red') &&
+                        cells[b].classList.contains('red') &&
+                        cells[c].classList.contains('red')
+                    ) {
+                        playApplauseSound();
+                        return true;
+                    } else if (
+                        cells[a].classList.contains('blue') &&
+                        cells[b].classList.contains('blue') &&
+                        cells[c].classList.contains('blue')
+                    ) {
+                        playApplauseSound();
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            function playApplauseSound() {
+                applauseSound.play();
+
+                // 兩秒後停止播放
+                setTimeout(() => {
+                    applauseSound.pause();
+                    applauseSound.currentTime = 0;
+                }, 2000);
+            }
+
+            function displayWinner(player) {
+                winMessage.textContent = `${player} wins!`;
+                winMessage.className = `${player.toLowerCase()}-win`;
+            }
+
+            window.resetGame = function() {
+                // 重置棋盤、回合、獲勝提示和點擊事件
+                cells.forEach(cell => {
+                    cell.classList.remove('red', 'blue', 'clicked');
+                    cell.style.backgroundColor = '';
+                    cell.textContent = '';
+                    cell.addEventListener('click', handleClick);
+                });
+
+                isRedTurn = true;
+                winMessage.textContent = '';
+                winMessage.className = '';
+            };
+        });
+    </script>
+</body>
+</html>
